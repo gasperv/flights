@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cheap Flights</title>
-<meta name="description" content="Cheapest Ryanair round trips from the airports around Ljubljana.">
+<meta name="description" content="Cheapest round trips from Ljubljana and the airports around it.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
@@ -135,7 +135,7 @@ function render() {
     <li><a href="${esc(f.url)}" target="_blank" rel="noopener">
       <span>
         <span class="route">${flag(origins[f.from]?.cc)}${esc(origins[f.from]?.name || f.from)} →${flag(d.cc)}${place(d.city, d.country)}</span><br>
-        <span class="when">${day(f.out)} – ${day(f.back)} · ${f.nights} nights</span>
+        <span class="when">${day(f.out)} – ${day(f.back)} · ${f.nights} nights${f.airline ? ` · ${esc(f.airline)}` : ""}</span>
       </span>
       <span class="price">€${Math.round(f.price)}</span>
     </a></li>`).join("") || `<li class="none">No deals match. Try a higher price or another trip length.</li>`;
