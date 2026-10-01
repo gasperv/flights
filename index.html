@@ -36,6 +36,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 #list a:focus-visible { outline: 2px solid var(--price); outline-offset: -2px; }
 #list li.none { padding: 24px 8px; color: var(--muted); }
 .route { font-weight: 600; }
+.country { font-weight: 400; }
 .when { font-size: 14px; color: var(--muted); }
 .price { font-weight: 700; font-size: 18px; color: var(--price); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
@@ -99,7 +100,13 @@ const fmt = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric",
 const day = (iso) => fmt.format(new Date(iso + "T12:00:00"));
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const KEY = "flights-filters";
-let data, names, max, nights;
+let data, origins, max, nights;
+
+// "it" -> 🇮🇹, built from the two regional-indicator letters.
+const flag = (cc) => /^[a-z]{2}$/i.test(cc || "")
+  ? String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0))) + " " : "";
+const place = (city, country) => esc(city) +
+  (country && country !== city ? `<span class="country">, ${esc(country)}</span>` : "");
 
 function ago(date) {
   const min = Math.round((Date.now() - date) / 60000);
@@ -127,7 +134,7 @@ function render() {
   $("list").innerHTML = deals.map(({ d, f }) => `
     <li><a href="${esc(f.url)}" target="_blank" rel="noopener">
       <span>
-        <span class="route">${esc(names[f.from] || f.from)} → ${esc(d.city)}</span><br>
+        <span class="route">${flag(origins[f.from]?.cc)}${esc(origins[f.from]?.name || f.from)} →${flag(d.cc)}${place(d.city, d.country)}</span><br>
         <span class="when">${day(f.out)} – ${day(f.back)} · ${f.nights} nights</span>
       </span>
       <span class="price">€${Math.round(f.price)}</span>
@@ -138,7 +145,7 @@ fetch("deals.json", { cache: "no-store" })
   .then((r) => r.ok ? r.json() : Promise.reject())
   .then((d) => {
     data = d;
-    names = Object.fromEntries(data.origins.map((o) => [o.code, o.name]));
+    origins = Object.fromEntries(data.origins.map((o) => [o.code, o]));
 
     const top = Math.max(...data.destinations.map((x) => x.fares.at(-1).price));
     const slider = $("max");
